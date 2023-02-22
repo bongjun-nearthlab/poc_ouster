@@ -1,0 +1,3 @@
+/home/nvidia/poc/ouster/build/CMakeFiles/rebuild_cache.dir
+/home/nvidia/poc/ouster/build/CMakeFiles/ouster.dir
+/home/nvidia/poc/ouster/build/CMakeFiles/edit_cache.dir

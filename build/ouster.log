@@ -1,0 +1,2 @@
+[2023-02-22 18:03:53.214] [ouster::sensor] [info] initializing sensor: 10.5.5.99 with ports: 0/0
+[2023-02-22 18:04:12.616] [ouster::sensor] [warning] The SDK will soon output the non-legacy metadata format by default.  If you parse the metadata directly instead of using the SDK (which will continue to read both legacy and non-legacy formats), please be advised that on the next release you will either have to update your parsing or specify legacy_format = true to the get_metadata function.
