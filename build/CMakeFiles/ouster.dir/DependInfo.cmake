@@ -11,6 +11,7 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_CXX
   "EIGEN_MPL2_ONLY"
+  "OPENCV_TRAITS_ENABLE_DEPRECATED"
   )
 
 # The include file search paths:
@@ -19,6 +20,8 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/usr/include/hdf5/serial"
   "../include"
   "../include/optional-lite"
+  "../include/spinnaker"
+  "/usr/local/include/opencv"
   "/usr/include/eigen3"
   "/usr/include/jsoncpp"
   )

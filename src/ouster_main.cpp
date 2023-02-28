@@ -27,7 +27,37 @@ std::string get_current_time() {
 }
 
 
-void read_points(int argc, std::string scanner_ip) {
+cv::Mat AcquireImage(CameraPtr pCam) {
+    /*
+    CEnumerationPtr ptrAcquisitionMode = nodeMap.GetNode("AcquisitionMode");
+    CEnumEntryPtr ptrAcquisitionModeContinuous = ptrAcquisitionMode->GetEntryByName("Continuous");
+
+    const int64_t acquisitionModeContinuous = ptrAcquisitionModeContinuous->GetValue();
+    ptrAcquisitionMode->SetIntValue(acquisitionModeContinuous);
+    */
+    pCam->BeginAcquisition();
+    ImageProcessor processor;
+    processor.SetColorProcessing(HQ_LINEAR);
+
+    ImagePtr pResultImage = pCam->GetNextImage(1000);
+    ImagePtr convertedImage = processor.Convert(pResultImage, PixelFormat_RGB8);
+
+    std::ostringstream filename;
+    filename << "temp.jpg";
+    convertedImage->Save(filename.str().c_str());
+    
+    cv::Mat imgData = cv::imread(filename.str());
+    std::system("rm -f temp.jpg");
+
+    pResultImage->Release();
+    pCam->EndAcquisition();
+    
+    return imgData;
+}
+
+
+void read_sensors(int argc, std::string scanner_ip, CameraPtr pCam) {
+    /* ouster init setting */
     sensor::init_logger("info", "ouster.log");
 
     const std::string sensor_hostname = scanner_ip;
@@ -57,6 +87,10 @@ void read_points(int argc, std::string scanner_ip) {
     std::array<float, 4> point;
     std::vector<std::array<float, 4>> pointcloud;
 
+    /* cam init setting */
+    pCam->Init();
+    //INodeMap& nodeMap = pCam->GetNodeMap();
+
     while(true) {
         sensor::client_state st = sensor::poll_client(*handle);
         if (st & sensor::CLIENT_ERROR) FATAL("Sensor client returned error state!");
@@ -68,6 +102,10 @@ void read_points(int argc, std::string scanner_ip) {
 
             if (batch_to_scan(packet_buf.get(), scans[i])) {
                 if (scans[i].complete(info.format.column_window)) {
+                    
+                    /* run signle frame using async */
+                    std::future<cv::Mat> imgData = std::async(std::launch::async, AcquireImage, pCam);
+
                     clouds.push_back(ouster::cartesian(scans[i], lut));
                     pointcloud.clear();
                     for(int j = 0; j < clouds[i].rows(); j++) {
@@ -80,12 +118,15 @@ void read_points(int argc, std::string scanner_ip) {
                             pointcloud.push_back(point);
                         }
                     }
+                    
+                    //std::cerr << imgData.get() << std::endl;
                     pcd.push(pointcloud);
                     i++;
                 }
             }
         }
     }
+    pCam->DeInit();
 }
 
 
@@ -129,16 +170,28 @@ int main(int argc, char* argv[]) {
     std::signal(SIGINT, sigint_handler);
 	keep_alive = true;
 
+    /* ouster */
     std::string ip = "10.5.5.99";
 	if(1 < argc) ip = argv[1];
 
-	std::thread streaming(read_points, argc, ip);
+    /* cam */
+    SystemPtr system = System::GetInstance();
+    CameraList camList = system->GetCameras();
+    const unsigned int numCameras = camList.GetSize();
+    if (numCameras == 0) {
+        camList.Clear();
+        system->ReleaseInstance();
+        FATAL("Not enough cameras!");
+    }
+    CameraPtr pCam = nullptr;
+    pCam = camList.GetByIndex(0);
+
+    /* thread */
+	std::thread streaming(read_sensors, argc, ip, pCam);
     std::thread logging(log_points);
     
     streaming.join();
     logging.join();
-
-
 
     return EXIT_SUCCESS;
 }

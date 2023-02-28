@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_FLAGS =   -std=gnu++14
 
-CXX_DEFINES = -DEIGEN_MPL2_ONLY
+CXX_DEFINES = -DEIGEN_MPL2_ONLY -DOPENCV_TRAITS_ENABLE_DEPRECATED
 
-CXX_INCLUDES = -I/home/nvidia/poc/ouster/ouster -I/usr/include/hdf5/serial -I/home/nvidia/poc/ouster/include -I/home/nvidia/poc/ouster/include/optional-lite -isystem /usr/include/eigen3 -isystem /usr/include/jsoncpp 
+CXX_INCLUDES = -I/home/nvidia/poc/ouster/ouster -I/usr/include/hdf5/serial -I/home/nvidia/poc/ouster/include -I/home/nvidia/poc/ouster/include/optional-lite -I/home/nvidia/poc/ouster/include/spinnaker -isystem /usr/local/include/opencv -isystem /usr/include/eigen3 -isystem /usr/include/jsoncpp 
 

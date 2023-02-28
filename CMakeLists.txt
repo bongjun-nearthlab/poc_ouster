@@ -9,9 +9,11 @@ find_package(CURL REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(HDF5 REQUIRED COMPONENTS CXX)
 find_package(MPI REQUIRED)
+find_package(OpenCV REQUIRED)
 
 include_directories(ouster
     ${HDF5_INCLUDE_DIRS}
+    ${OpenCV_INCLUDE_DIRS}
 )
 
 add_executable(ouster 
@@ -21,6 +23,7 @@ add_executable(ouster
 target_include_directories(ouster PUBLIC
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include/optional-lite
+    ${CMAKE_SOURCE_DIR}/include/spinnaker
 )
 
 target_link_libraries(ouster
@@ -30,6 +33,7 @@ target_link_libraries(ouster
 	PRIVATE ${MPI_LIBRARIES}
 	PRIVATE ${HDF5_LIBRARIES}
 	PRIVATE ${HDF5_CXX_LIBRARIES}
+    PRIVATE ${OpenCV_LIBRARIES}
 )
 target_compile_definitions(ouster 
     PRIVATE EIGEN_MPL2_ONLY
@@ -37,4 +41,5 @@ target_compile_definitions(ouster
 
 target_link_libraries(ouster
     PUBLIC ${CMAKE_SOURCE_DIR}/lib/ouster/libouster_client.so
+    PUBLIC ${CMAKE_SOURCE_DIR}/lib/spinnaker/libSpinnaker.so
 )
